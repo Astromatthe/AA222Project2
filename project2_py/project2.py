@@ -14,6 +14,79 @@ Note: Do not import any other modules here.
 '''
 import numpy as np
 
+# strategy map and config map
+best_strategy_map = {
+        'simple1': "quadratic_penalty_l_bfgs",
+        'simple2': "quadratic_penalty_l_bfgs",
+        'simple3': "quadratic_penalty_l_bfgs",    # quadratic_penalty_l_bfgs passes
+        'secret1': "quadratic_penalty_l_bfgs",
+        'secret2': "quadratic_penalty_l_bfgs"
+    }
+strategy_config_map = {
+    'simple1':{
+        'quadratic_penalty_l_bfgs': {
+                'penalty': {'rho_init': 0.01, 'rho_max': 1e6, 'inc': 5}, # 0.01, 1e6, 5
+                'l_bfgs': {'m_max': 5},   # 5
+                'line_search': {'n_searches': 20, 'step': 0.01, 'beta': 0.5, 'sigma': 1e-4} # 20, 0.01, 0.5, 1e-4
+            },
+        'quadratic_penalty_gradient_descent': {
+                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
+                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+            }
+    },
+    'simple2':{
+        'quadratic_penalty_l_bfgs':
+            {
+                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
+                'l_bfgs': {'m_max': 10},
+                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+            },
+            'quadratic_penalty_gradient_descent':
+            {
+                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
+                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+            }
+    },
+    'simple3':{
+        'quadratic_penalty_l_bfgs':
+            {
+                'penalty': {'rho_init': 0.0001, 'rho_max': 1e6, 'inc': 3}, # 20, 1e6, 1.3
+                'l_bfgs': {'m_max': 5},    # 10
+                'line_search': {'n_searches': 20, 'step': 0.01, 'beta': 0.5, 'sigma': 1e-4} # 20, 0.01, 0.5, 1e-4
+            },
+            'quadratic_penalty_gradient_descent':
+            {
+                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
+                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+            }
+    },
+    'secret1':{
+        'quadratic_penalty_l_bfgs':
+            {
+                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
+                'l_bfgs': {'m_max': 10},
+                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+            },
+            'quadratic_penalty_gradient_descent':
+            {
+                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
+                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+            }
+    },
+    'secret2':{
+        'quadratic_penalty_l_bfgs':
+            {
+                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
+                'l_bfgs': {'m_max': 10},
+                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+            },
+            'quadratic_penalty_gradient_descent':
+            {
+                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
+                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+            }
+    },
+}
 
 def optimize(f, g, c, x0, n, count, prob):
     """
@@ -23,58 +96,13 @@ def optimize(f, g, c, x0, n, count, prob):
         c (function): Function evaluating constraints
         x0 (np.array): Initial position to start from
         n (int): Number of evaluations allowed. Remember `f` and `c` cost 1 and `g` costs 2
-        count (function): takes no arguments are reutrns current count
+        count (function): takes no arguments and returns current count
         prob (str): Name of the problem. So you can use a different strategy 
                  for each problem. `prob` can be `simple1`,`simple2`,`simple3`,
                  `secret1` or `secret2`
     Returns:
         x_best (np.array): best selection of variables found
     """
-
-    best_strategy_map = {
-        'simple1': "quadratic_penalty_l_bfgs", # Rosenbrock
-        'simple2': "quadratic_penalty_l_bfgs", # Himmelblau
-        'simple3': "quadratic_penalty_l_bfgs", # Powell
-        'secret1': "quadratic_penalty_l_bfgs",
-        'secret2': "quadratic_penalty_l_bfgs"
-    }
-    strategy_config_map = {
-        'simple1':{
-            'quadratic_penalty_l_bfgs': 
-                {
-                    'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
-                    'l_bfgs': {'m_max': 10},
-                    'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
-                }},
-        'simple2':{
-            'quadratic_penalty_l_bfgs':
-                {
-                    'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
-                    'l_bfgs': {'m_max': 10},
-                    'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
-                }},
-        'simple3':{
-            'quadratic_penalty_l_bfgs':
-                {
-                    'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
-                    'l_bfgs': {'m_max': 10},
-                    'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
-                }},
-        'secret1':{
-            'quadratic_penalty_l_bfgs':
-                {
-                    'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
-                    'l_bfgs': {'m_max': 10},
-                    'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
-                }},
-        'secret2':{
-            'quadratic_penalty_l_bfgs':
-                {
-                    'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
-                    'l_bfgs': {'m_max': 10},
-                    'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
-                }},
-    }
 
     strategy = best_strategy_map[prob]
     config = strategy_config_map[prob][strategy]
@@ -83,7 +111,11 @@ def optimize(f, g, c, x0, n, count, prob):
     if strategy == "quadratic_penalty_l_bfgs":
         x_history, _, _, _, _, _, _ = quadratic_penalty_l_bfgs(f, g, c, x0, n, count, config)
         x_best = x_history[-1]
-        
+    
+    if strategy == "quadratic_penalty_gradient_descent":
+        x_history, _, _, _ = quadratic_penalty_gradient_descent(f, g, c, x0, n, count, config)
+        x_best = x_history[-1]
+
     return x_best
 
 # ---- helper functions for penalty methods ----
@@ -112,6 +144,62 @@ def penalized_g(x, g, c, rho):
     return g_pen, g_x, pen_grad
 
 # ---- optimization algorithms ----
+def quadratic_penalty_gradient_descent(f, g, c, x0, n, count, config):
+    """
+    Quadratic penalty method with gradient descent for the inner loop.
+    Args:
+        f (function): Function to be optimized
+        g (function): Gradient function for `f`
+        c (function): Function evaluating constraints
+        x0 (np.array): Initial position to start from
+        n (int): Number of evaluations allowed. Remember `f` and `c` cost 1 and `g` costs 2
+        count (function): takes no arguments and returns current count
+        config (dict): configuration dictionary for penalty and gradient descent parameters
+    Returns:
+        x_history (list of np.array): history of positions visited during optimization
+    """
+    x = x0.copy()
+    x_history = [x.copy()]
+    # penalty parameter
+    rho = config['penalty']['rho_init']
+    rho_max = config['penalty']['rho_max']
+    inc = config['penalty']['inc']
+
+    # initialize
+    f_pen_x0, f_x0, pen_f_x0 = penalized_f(x, f, c, rho)
+    f_pen_history = [f_pen_x0] # f + penalty
+    f_history = [f_x0] # f only
+    pen_f_history = [pen_f_x0] # penalty only
+
+    # penalized_g costs: g(2) + finite-diff penalty gradient (2*dim calls to c)
+    penalized_g_cost = 2 + 2 * len(x)
+
+    while True:
+        if count() + penalized_g_cost > n:
+            break
+        g_pen, _, _ = penalized_g(x, g, c, rho)
+        grad_norm = np.linalg.norm(g_pen)
+        if grad_norm < 1e-9:
+            break
+
+        # line search
+        _, x_new, f_pen_new, f_new, pen_f_new = line_search(lambda xx: penalized_f(xx, f, c, rho), x, -g_pen, g_pen, count, n, cost_per_eval=2, config=config)
+
+        x_history.append(x_new.copy())
+        f_pen_history.append(f_pen_new)
+        f_history.append(f_new)
+        pen_f_history.append(pen_f_new)
+
+        # update penalty parameter
+        if count() + 1 <= n: # cost for c
+            if np.max(c(x)) > 1e-3:
+                rho = min(inc * rho, rho_max)
+
+        x = x_new
+        if count() >= n:
+            break
+    return x_history, f_pen_history, f_history, pen_f_history
+            
 def quadratic_penalty_l_bfgs(f, g, c, x0, n, count, config):
     """
     Quadratic penalty method with L-BFGS optimization for the inner loop.
@@ -159,7 +247,7 @@ def quadratic_penalty_l_bfgs(f, g, c, x0, n, count, config):
             break
         g_pen, _, _ = penalized_g(x, g, c, rho)
         grad_norm = np.linalg.norm(g_pen)
-        if grad_norm < 1e-9:
+        if grad_norm < 1e-6:
             break
 
         # compute L-BFGS direction using two-loop recursion
@@ -183,10 +271,15 @@ def quadratic_penalty_l_bfgs(f, g, c, x0, n, count, config):
             d_dir = -g_pen
 
         # line search: penalized_f costs 2 per eval (f + c)
-        ls_res = line_search(lambda xx: penalized_f(xx, f, c, rho), x, d_dir, g_pen, count, n, cost_per_eval=penalized_f_cost, config=config)
-        if len(ls_res) == 3:
-            print(ls_res)
-        alpha, x_new, f_pen_new, f_new, pen_f_new = ls_res
+        alpha, x_new, f_pen_new, f_new, pen_f_new = line_search(
+            lambda xx: penalized_f(xx, f, c, rho), 
+            x, 
+            d_dir, 
+            g_pen, 
+            count, 
+            n, 
+            cost_per_eval=penalized_f_cost, 
+            config=config)
 
         # update history
         x_history.append(x_new.copy())
