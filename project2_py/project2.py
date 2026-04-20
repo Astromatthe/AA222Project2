@@ -31,24 +31,59 @@ def optimize(f, g, c, x0, n, count, prob):
         x_best (np.array): best selection of variables found
     """
 
-    strategy_map = {
-        'simple1': "quadratic_penalty_l_bfgs",
-        'simple2': "quadratic_penalty_l_bfgs",
-        'simple3': "quadratic_penalty_l_bfgs",
+    best_strategy_map = {
+        'simple1': "quadratic_penalty_l_bfgs", # Rosenbrock
+        'simple2': "quadratic_penalty_l_bfgs", # Himmelblau
+        'simple3': "quadratic_penalty_l_bfgs", # Powell
         'secret1': "quadratic_penalty_l_bfgs",
         'secret2': "quadratic_penalty_l_bfgs"
     }
-    strategy = strategy_map[prob]
+    strategy_config_map = {
+        'simple1':{
+            'quadratic_penalty_l_bfgs': 
+                {
+                    'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
+                    'l_bfgs': {'m_max': 10},
+                    'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+                }},
+        'simple2':{
+            'quadratic_penalty_l_bfgs':
+                {
+                    'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
+                    'l_bfgs': {'m_max': 10},
+                    'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+                }},
+        'simple3':{
+            'quadratic_penalty_l_bfgs':
+                {
+                    'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
+                    'l_bfgs': {'m_max': 10},
+                    'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+                }},
+        'secret1':{
+            'quadratic_penalty_l_bfgs':
+                {
+                    'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
+                    'l_bfgs': {'m_max': 10},
+                    'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+                }},
+        'secret2':{
+            'quadratic_penalty_l_bfgs':
+                {
+                    'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
+                    'l_bfgs': {'m_max': 10},
+                    'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+                }},
+    }
+
+    strategy = best_strategy_map[prob]
+    config = strategy_config_map[prob][strategy]
     x_history = [x0.copy()]
 
     if strategy == "quadratic_penalty_l_bfgs":
-        x_history, _, _, _, _, _, _ = quadratic_penalty_l_bfgs(f, g, c, x0, n, count)
+        x_history, _, _, _, _, _, _ = quadratic_penalty_l_bfgs(f, g, c, x0, n, count, config)
         x_best = x_history[-1]
-
-    # if strategy == "quadratic_penalty_gradient_descent":
-    #     x_history = quadratic_penalty_gradient_descent(f, g, c, x0, n, count)
-    #     x_best = x_history[-1]
-    # print(f"Best solution for {prob}: {x_best}")
+        
     return x_best
 
 # ---- helper functions for penalty methods ----
@@ -77,7 +112,7 @@ def penalized_g(x, g, c, rho):
     return g_pen, g_x, pen_grad
 
 # ---- optimization algorithms ----
-def quadratic_penalty_l_bfgs(f, g, c, x0, n, count):
+def quadratic_penalty_l_bfgs(f, g, c, x0, n, count, config):
     """
     Quadratic penalty method with L-BFGS optimization for the inner loop.
     Args:
@@ -87,28 +122,29 @@ def quadratic_penalty_l_bfgs(f, g, c, x0, n, count):
         x0 (np.array): Initial position to start from
         n (int): Number of evaluations allowed. Remember `f` and `c` cost 1 and `g` costs 2
         count (function): takes no arguments and returns current count
+        config (dict): configuration dictionary for penalty and L-BFGS parameters
     Returns:
         x_history (list of np.array): history of positions visited during optimization
     """
     # initialize  
     x = x0.copy()
     x_history = [x.copy()]  # x
-    f_pen_x0, f_x0, pen_f_x0 = penalized_f(x, f, c, rho=0.001)
+    f_pen_x0, f_x0, pen_f_x0 = penalized_f(x, f, c, rho=config['penalty']['rho_init'])
     f_pen_history = [f_pen_x0] # f + penalty
     f_history = [f_x0] # f only
     pen_f_history = [pen_f_x0] # penalty only
-    g_pen_x0, g_x0, pen_g_x0 = penalized_g(x, g, c, rho=0.001)
+    g_pen_x0, g_x0, pen_g_x0 = penalized_g(x, g, c, rho=config['penalty']['rho_init'])
     g_pen_history = [g_pen_x0] # g + g penalty
     g_history = [g_x0] # g only
     pen_g_history = [pen_g_x0] # g penalty only
 
     # penalty parameter
-    rho = 0.001
-    rho_max = 1e6
-    inc = 1.5
+    rho = config['penalty']['rho_init']
+    rho_max = config['penalty']['rho_max']
+    inc = config['penalty']['inc']
 
     # L-BFGS parameters
-    m_max = 10  # memory size
+    m_max = config['l_bfgs']['m_max']  # memory size
     deltas = []  # list to store delta_k = x_{k+1} - x_k
     gammas = []  # list to store gamma_k = grad_{k+1} - grad_k
 
@@ -147,7 +183,7 @@ def quadratic_penalty_l_bfgs(f, g, c, x0, n, count):
             d_dir = -g_pen
 
         # line search: penalized_f costs 2 per eval (f + c)
-        ls_res = line_search(lambda xx: penalized_f(xx, f, c, rho), x, d_dir, g_pen, count, n, cost_per_eval=penalized_f_cost)
+        ls_res = line_search(lambda xx: penalized_f(xx, f, c, rho), x, d_dir, g_pen, count, n, cost_per_eval=penalized_f_cost, config=config)
         if len(ls_res) == 3:
             print(ls_res)
         alpha, x_new, f_pen_new, f_new, pen_f_new = ls_res
@@ -192,7 +228,7 @@ def quadratic_penalty_l_bfgs(f, g, c, x0, n, count):
     return x_history, f_pen_history, f_history, pen_f_history, g_pen_history, g_history, pen_g_history
 
 # ---- helpers ----
-def line_search(f, x, d, grad, count, n, cost_per_eval=1):
+def line_search(f, x, d, grad, count, n, cost_per_eval=1, config=None):
     """
     Backtracking line search to find step size along direction `d`.
     Args:
@@ -203,16 +239,17 @@ def line_search(f, x, d, grad, count, n, cost_per_eval=1):
         count (function): function that returns current count of evaluations
         n (int): maximum number of evaluations allowed
         cost_per_eval (int): budget cost of one call to f
+        config (dict): configuration dictionary for line search parameters
     Returns:
         alpha (float): step size found by line search
         f_val (float): function value at new point
         pen_val (float): penalty value at new point
 
     """
-    n_searches = 20
-    step = 1.0
-    beta = 0.5
-    sigma = 1e-4
+    n_searches = config['line_search']['n_searches']
+    step = config['line_search']['step']
+    beta = config['line_search']['beta']
+    sigma = config['line_search']['sigma']
 
     if count() + cost_per_eval > n:
         return 0.0, np.zeros_like(x), 0.0, 0.0, 0.0
