@@ -11,8 +11,8 @@ from tqdm import tqdm
 
 from project2_py.helpers import Simple1, Simple2, Simple3
 from project2_py.project2 import (
-    quadratic_penalty_gradient_descent,
-    quadratic_penalty_l_bfgs,
+    penalty_gradient_descent,
+    penalty_l_bfgs,
 )
 
 PROBLEMS = [Simple1, Simple2, Simple3]
@@ -53,11 +53,17 @@ def run_strategy(strategy, config, ProblemClass, n_trials):
         x0 = p.x0()
         try:
             if strategy == 'quadratic_penalty_gradient_descent':
-                x_hist, _, _, _ = quadratic_penalty_gradient_descent(
-                    p.f, p.g, p.c, x0, p.n, p.count, config)
+                x_hist, _, _, _ = penalty_gradient_descent(
+                    p.f, p.g, p.c, x0, p.n, p.count, config, penalty_mode='quadratic')
             elif strategy == 'quadratic_penalty_l_bfgs':
-                x_hist, _, _, _, _, _, _ = quadratic_penalty_l_bfgs(
-                    p.f, p.g, p.c, x0, p.n, p.count, config)
+                x_hist, _, _, _, _, _, _ = penalty_l_bfgs(
+                    p.f, p.g, p.c, x0, p.n, p.count, config, penalty_mode='quadratic')
+            elif strategy == 'absolute_penalty_gradient_descent':
+                x_hist, _, _, _ = penalty_gradient_descent(
+                    p.f, p.g, p.c, x0, p.n, p.count, config, penalty_mode='absolute')
+            elif strategy == 'absolute_penalty_l_bfgs':
+                x_hist, _, _, _, _, _, _ = penalty_l_bfgs(
+                    p.f, p.g, p.c, x0, p.n, p.count, config, penalty_mode='absolute')
             else:
                 return 0.0
             if p.count() > p.n:
@@ -80,12 +86,18 @@ def build_configs(strategy):
             elif strategy == 'quadratic_penalty_l_bfgs':
                 for lb in product_dicts(LBFGS_GRID):
                     yield {'penalty': pen, 'line_search': ls, 'l_bfgs': lb}
-
+            elif strategy == 'absolute_penalty_gradient_descent':
+                yield {'penalty': pen, 'line_search': ls}
+            elif strategy == 'absolute_penalty_l_bfgs':
+                for lb in product_dicts(LBFGS_GRID):
+                    yield {'penalty': pen, 'line_search': ls, 'l_bfgs': lb}
 
 def search():
     strategies = [
         'quadratic_penalty_gradient_descent',
         'quadratic_penalty_l_bfgs',
+        'absolute_penalty_gradient_descent',
+        'absolute_penalty_l_bfgs',
     ]
 
     results = {}
