@@ -1,0 +1,20 @@
+{
+  "feasibility_rate": 1.0,
+  "config": {
+    "penalty": {
+      "rho_init": 0.1,
+      "rho_max": 1000000.0,
+      "inc": 5.0
+    },
+    "line_search": {
+      "n_searches": 20,
+      "step": 0.01,
+      "beta": 0.5,
+      "sigma": 0.0001
+    },
+    "l_bfgs": {
+      "m_max": 10
+    }
+  },
+  "passes": true
+}

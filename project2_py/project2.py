@@ -16,11 +16,11 @@ import numpy as np
 
 # strategy map and config map
 best_strategy_map = {
-        'simple1': "augmented_lagrangian_l_bfgs",    
-        'simple2': "augmented_lagrangian_l_bfgs",
-        'simple3': "augmented_lagrangian_l_bfgs",
-        'secret1': "augmented_lagrangian_l_bfgs",
-        'secret2': "augmented_lagrangian_l_bfgs"
+        'simple1': "absolute_penalty_gradient_descent",
+        'simple2': "absolute_penalty_gradient_descent",
+        'simple3': "absolute_penalty_gradient_descent",
+        'secret1': "absolute_penalty_gradient_descent",
+        'secret2': "absolute_penalty_gradient_descent",
     }
 strategy_config_map = {
     'simple1':{
@@ -34,7 +34,7 @@ strategy_config_map = {
                 'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
             },
         'absolute_penalty_l_bfgs': {
-                'penalty': {'rho_init': 0.0001, 'rho_max': 1e6, 'inc': 5},
+                'penalty': {'rho_init': 50, 'rho_max': 1e6, 'inc': 5},
                 'l_bfgs': {'m_max': 5},
                 'line_search': {'n_searches': 20, 'step': 0.01, 'beta': 0.5, 'sigma': 1e-4} 
             },
@@ -43,46 +43,46 @@ strategy_config_map = {
                 'line_search': {'n_searches': 20, 'step': 0.01, 'beta': 0.3, 'sigma': 1e-4}
             },
         'augmented_lagrangian_gradient_descent': {
-                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
-                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+                'penalty': {'rho_init': 0.0001, 'rho_max': 1e6, 'inc': 1.3},
+                'line_search': {'n_searches': 20, 'step': 0.01, 'beta': 0.5, 'sigma': 1e-4}
             },
         'augmented_lagrangian_l_bfgs': {
-                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
-                'l_bfgs': {'m_max': 10},
-                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 5},
+                'l_bfgs': {'m_max': 5},
+                'line_search': {'n_searches': 20, 'step': 0.01, 'beta': 0.5, 'sigma': 1e-4}
             },
     },
     'simple2':{
         'quadratic_penalty_l_bfgs':
             {
-                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
-                'l_bfgs': {'m_max': 10},
-                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+                'penalty': {'rho_init': 50, 'rho_max': 1e6, 'inc': 3},
+                'l_bfgs': {'m_max': 20},
+                'line_search': {'n_searches': 20, 'step': 0.01, 'beta': 0.3, 'sigma': 1e-4}
             },
         'quadratic_penalty_gradient_descent':
             {
-                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
+                'penalty': {'rho_init': 0.0001, 'rho_max': 1e6, 'inc': 3},
                 'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
             },
         'absolute_penalty_l_bfgs':
             {
-                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
-                'l_bfgs': {'m_max': 10},
-                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+                'penalty': {'rho_init': 50, 'rho_max': 1e6, 'inc': 5},
+                'l_bfgs': {'m_max': 20},
+                'line_search': {'n_searches': 20, 'step': 0.01, 'beta': 0.3, 'sigma': 1e-4}
             },
         'absolute_penalty_gradient_descent':
             {
-                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
-                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+                'penalty': {'rho_init': 0.0001, 'rho_max': 1e6, 'inc': 1.7},
+                'line_search': {'n_searches': 20, 'step': 0.1, 'beta': 0.3, 'sigma': 1e-4}
             },
         'augmented_lagrangian_gradient_descent': {
-                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
-                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.3},
+                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.3, 'sigma': 1e-4}
             },
         'augmented_lagrangian_l_bfgs': {
-                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
+                'penalty': {'rho_init': 50, 'rho_max': 1e6, 'inc': 3},
                 'l_bfgs': {'m_max': 10},
-                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+                'line_search': {'n_searches': 20, 'step': 0.01, 'beta': 0.5, 'sigma': 1e-4}
             },
     },
     'simple3':{
@@ -94,28 +94,28 @@ strategy_config_map = {
             },
         'quadratic_penalty_gradient_descent':
             {
-                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
+                'penalty': {'rho_init': 0.0001, 'rho_max': 1e6, 'inc': 1.3},
                 'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
             },
         'absolute_penalty_l_bfgs':
             {
-                'penalty': {'rho_init': 0.0001, 'rho_max': 1e6, 'inc': 3}, # 20, 1e6, 1.3
-                'l_bfgs': {'m_max': 5},    # 10
+                'penalty': {'rho_init': 0.1, 'rho_max': 1e6, 'inc': 5},
+                'l_bfgs': {'m_max': 10},
                 'line_search': {'n_searches': 20, 'step': 0.01, 'beta': 0.5, 'sigma': 1e-4} # 20, 0.01, 0.5, 1e-4
             },
         'absolute_penalty_gradient_descent':
             {
-                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
-                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+                'penalty': {'rho_init': 0.0001, 'rho_max': 1e6, 'inc': 1.3},
+                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.3, 'sigma': 1e-4}
             },
         'augmented_lagrangian_gradient_descent': {
-                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
-                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+                'penalty': {'rho_init': 0.0001, 'rho_max': 1e6, 'inc': 3},
+                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.3, 'sigma': 1e-4}
             },
         'augmented_lagrangian_l_bfgs': {
-                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
+                'penalty': {'rho_init': 0.0001, 'rho_max': 1e6, 'inc': 1.5},
                 'l_bfgs': {'m_max': 10},
-                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.3, 'sigma': 1e-4}
             },
     },
     'secret1':{
@@ -138,8 +138,8 @@ strategy_config_map = {
             },
         'absolute_penalty_gradient_descent':
             {
-                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
-                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+                'penalty': {'rho_init': 0.0001, 'rho_max': 1e6, 'inc': 1.7},
+                'line_search': {'n_searches': 20, 'step': 0.1, 'beta': 0.3, 'sigma': 1e-4}
             },
         'augmented_lagrangian_gradient_descent': {
                 'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
@@ -171,8 +171,8 @@ strategy_config_map = {
             },
         'absolute_penalty_gradient_descent':
             {
-                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
-                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+                'penalty': {'rho_init': 0.0001, 'rho_max': 1e6, 'inc': 1.7},
+                'line_search': {'n_searches': 20, 'step': 0.1, 'beta': 0.3, 'sigma': 1e-4}
             },
         'augmented_lagrangian_gradient_descent': {
                 'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
@@ -190,14 +190,14 @@ def optimize(f, g, c, x0, n, count, prob):
     """
     Args:
         f (function): Function to be optimized
-        g (function): Gradient function for `f`
+        g (function): Gradient function for 'f'
         c (function): Function evaluating constraints
         x0 (np.array): Initial position to start from
-        n (int): Number of evaluations allowed. Remember `f` and `c` cost 1 and `g` costs 2
+        n (int): Number of evaluations allowed. Remember 'f' and 'c' cost 1 and 'g' costs 2
         count (function): takes no arguments and returns current count
         prob (str): Name of the problem. So you can use a different strategy 
-                 for each problem. `prob` can be `simple1`,`simple2`,`simple3`,
-                 `secret1` or `secret2`
+                 for each problem. 'prob' can be 'simple1','simple2','simple3',
+                 'secret1' or 'secret2'
     Returns:
         x_best (np.array): best selection of variables found
     """
@@ -270,10 +270,10 @@ def penalty_gradient_descent(f, g, c, x0, n, count, config, penalty_mode='quadra
     Penalty method with gradient descent for the inner loop.
     Args:
         f (function): Function to be optimized
-        g (function): Gradient function for `f`
+        g (function): Gradient function for 'f'
         c (function): Function evaluating constraints
         x0 (np.array): Initial position to start from
-        n (int): Number of evaluations allowed. Remember `f` and `c` cost 1 and `g` costs 2
+        n (int): Number of evaluations allowed: 'f' and 'c' cost 1 and 'g' costs 2
         count (function): takes no arguments and returns current count
         config (dict): configuration dictionary for penalty and gradient descent parameters
     Returns:
@@ -326,10 +326,10 @@ def penalty_l_bfgs(f, g, c, x0, n, count, config, penalty_mode='quadratic'):
     Penalty method with L-BFGS optimization for the inner loop.
     Args:
         f (function): Function to be optimized
-        g (function): Gradient function for `f`
+        g (function): Gradient function for 'f'
         c (function): Function evaluating constraints
         x0 (np.array): Initial position to start from
-        n (int): Number of evaluations allowed. Remember `f` and `c` cost 1 and `g` costs 2
+        n (int): Number of evaluations allowed: 'f' and 'c' cost 1 and 'g' costs 2
         count (function): takes no arguments and returns current count
         config (dict): configuration dictionary for penalty and L-BFGS parameters
         penalty_mode (str): 'quadratic' or 'absolute' for the type of penalty function to use
@@ -475,10 +475,10 @@ def augmented_lagrangian_gradient_descent(f, g, c, x0, n, count, config):
     Augmented Lagrangian method with gradient descent inner loop.
     Args:
         f (function): Function to be optimized
-        g (function): Gradient function for `f`
+        g (function): Gradient function for 'f'
         c (function): Function evaluating constraints
         x0 (np.array): Initial position to start from
-        n (int): Number of evaluations allowed. Remember `f` and `c` cost 1 and `g` costs 2
+        n (int): Number of evaluations allowed: 'f' and 'c' cost 1 and 'g' costs 2
         count (function): takes no arguments and returns current count
         config (dict): configuration dictionary for penalty and line search parameters
     Returns:
@@ -534,10 +534,10 @@ def augmented_lagrangian_l_bfgs(f, g, c, x0, n, count, config):
     Augmented Lagrangian method with L-BFGS inner loop.
     Args:
         f (function): Function to be optimized
-        g (function): Gradient function for `f`
+        g (function): Gradient function for 'f'
         c (function): Function evaluating constraints
         x0 (np.array): Initial position to start from
-        n (int): Number of evaluations allowed. Remember `f` and `c` cost 1 and `g` costs 2
+        n (int): Number of evaluations allowed: 'f' and 'c' cost 1 and 'g' costs 2
         count (function): takes no arguments and returns current count
         config (dict): configuration dictionary for penalty and L-BFGS parameters
     Returns:
@@ -635,7 +635,7 @@ def augmented_lagrangian_l_bfgs(f, g, c, x0, n, count, config):
 # ---- helpers ----
 def line_search(f, x, d, grad, count, n, cost_per_eval=1, config=None):
     """
-    Backtracking line search to find step size along direction `d`.
+    Backtracking line search to find step size along direction 'd'.
     Args:
         f (function): Function to be optimized
         x (np.array): current position
