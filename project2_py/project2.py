@@ -17,13 +17,17 @@ import numpy as np
 # strategy map and config map
 best_strategy_map = {
         'simple1': "absolute_penalty_gradient_descent",
-        'simple2': "quadratic_penalty_gradient_descent",
-        'simple3': "quadratic_penalty_gradient_descent",    # quadratic_penalty_l_bfgs passes
-        'secret1': "quadratic_penalty_gradient_descent",
-        'secret2': "quadratic_penalty_gradient_descent"
+        'simple2': "augmented_lagrangian_gradient_descent",
+        'simple3': "augmented_lagrangian_gradient_descent",    # quadratic_penalty_l_bfgs passes
+        'secret1': "augmented_lagrangian_gradient_descent",
+        'secret2': "augmented_lagrangian_gradient_descent"
     }
 strategy_config_map = {
     'simple1':{
+        'augmented_lagrangian_gradient_descent': {
+                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
+                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+            },
         'quadratic_penalty_l_bfgs': {
                 'penalty': {'rho_init': 0.01, 'rho_max': 1e6, 'inc': 5}, # 0.01, 1e6, 5
                 'l_bfgs': {'m_max': 5},   # 5
@@ -34,16 +38,20 @@ strategy_config_map = {
                 'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
             },
         'absolute_penalty_l_bfgs': {
-                'penalty': {'rho_init': 0.01, 'rho_max': 1e6, 'inc': 5}, # 0.01, 1e6, 5
-                'l_bfgs': {'m_max': 5},   # 5
-                'line_search': {'n_searches': 20, 'step': 0.01, 'beta': 0.5, 'sigma': 1e-4} # 20, 0.01, 0.5, 1e-4
+                'penalty': {'rho_init': 0.0001, 'rho_max': 1e6, 'inc': 5},
+                'l_bfgs': {'m_max': 5},
+                'line_search': {'n_searches': 20, 'step': 0.01, 'beta': 0.5, 'sigma': 1e-4} 
             },
         'absolute_penalty_gradient_descent': {
-                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
-                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+                'penalty': {'rho_init': 0.0001, 'rho_max': 1e6, 'inc': 1.3},
+                'line_search': {'n_searches': 20, 'step': 0.01, 'beta': 0.3, 'sigma': 1e-4}
             }
     },
     'simple2':{
+        'augmented_lagrangian_gradient_descent': {
+                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
+                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+            },
         'quadratic_penalty_l_bfgs':
             {
                 'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
@@ -68,6 +76,10 @@ strategy_config_map = {
             }
     },
     'simple3':{
+        'augmented_lagrangian_gradient_descent': {
+                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
+                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+            },
         'quadratic_penalty_l_bfgs':
             {
                 'penalty': {'rho_init': 0.0001, 'rho_max': 1e6, 'inc': 3}, # 20, 1e6, 1.3
@@ -92,6 +104,10 @@ strategy_config_map = {
             }
     },
     'secret1':{
+        'augmented_lagrangian_gradient_descent': {
+                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
+                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+            },
         'quadratic_penalty_l_bfgs':
             {
                 'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
@@ -116,6 +132,10 @@ strategy_config_map = {
             }
     },
     'secret2':{
+        'augmented_lagrangian_gradient_descent': {
+                'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
+                'line_search': {'n_searches': 20, 'step': 0.5, 'beta': 0.5, 'sigma': 1e-4}
+            },
         'quadratic_penalty_l_bfgs':
             {
                 'penalty': {'rho_init': 0.001, 'rho_max': 1e6, 'inc': 1.5},
@@ -177,6 +197,10 @@ def optimize(f, g, c, x0, n, count, prob):
 
     if strategy == "absolute_penalty_gradient_descent":
         x_history, _, _, _ = penalty_gradient_descent(f, g, c, x0, n, count, config, penalty_mode='absolute')
+        x_best = x_history[-1]
+
+    if strategy == "augmented_lagrangian_gradient_descent":
+        x_history = augmented_lagrangian_gradient_descent(f, g, c, x0, n, count, config)
         x_best = x_history[-1]
 
     return x_best
@@ -388,6 +412,93 @@ def penalty_l_bfgs(f, g, c, x0, n, count, config, penalty_mode='quadratic'):
         if count() >= n:
             break
     return x_history, f_pen_history, f_history, pen_f_history, g_pen_history, g_history, pen_g_history
+
+
+
+# ---- augmented lagrangian ----
+def augmented_lagrangian_f(x, f, c, lam, rho):
+    """Augmented Lagrangian value for inequality constraints c(x) <= 0."""
+    cx = c(x)
+    # shifted constraints
+    shifted = np.maximum(0.0, lam / rho + cx)
+    al = f(x) + (rho / 2.0) * np.sum(shifted ** 2) - (1.0 / (2.0 * rho)) * np.sum(lam ** 2)
+    return al
+
+def augmented_lagrangian_gradient(x, g, c, lam, rho):
+    """Gradient of augmented Lagrangian w.r.t. x using finite differences for constraint gradient."""
+    eps = 1e-6
+    cx = c(x)
+    active_weights = rho * np.maximum(0.0, lam / rho + cx)  # shape (n_constraints,)
+
+    # finite-diff gradient of weighted constraint sum
+    pen_grad = np.zeros_like(x)
+    for i in range(len(x)):
+        e_i = np.zeros_like(x)
+        e_i[i] = eps
+        cx_plus = c(x + e_i)
+        cx_minus = c(x - e_i)
+        pen_grad[i] = np.dot(active_weights, (cx_plus - cx_minus) / (2.0 * eps))
+
+    return g(x) + pen_grad
+
+def augmented_lagrangian_gradient_descent(f, g, c, x0, n, count, config):
+    """
+    Augmented Lagrangian method with gradient descent inner loop.
+    Args:
+        f (function): Function to be optimized
+        g (function): Gradient function for `f`
+        c (function): Function evaluating constraints
+        x0 (np.array): Initial position to start from
+        n (int): Number of evaluations allowed. Remember `f` and `c` cost 1 and `g` costs 2
+        count (function): takes no arguments and returns current count
+        config (dict): configuration dictionary for penalty and line search parameters
+    Returns:
+        x_history (list of np.array): history of positions visited during optimization
+    """
+    x = x0.copy()
+    x_history = [x.copy()]
+
+    rho = config['penalty']['rho_init']
+    rho_max = config['penalty']['rho_max']
+    inc = config['penalty']['inc']
+
+    cx = c(x)
+    lam = np.zeros(len(cx))  # dual variables, one per constraint
+
+    # cost per outer-loop gradient eval: g(2) + 2*dim*c(1) for finite diffs on c
+    dim = len(x)
+    grad_cost = 2 + 2 * dim
+
+    while True:
+        if count() + grad_cost > n:
+            break
+
+        grad = augmented_lagrangian_gradient(x, g, c, lam, rho)
+        if np.linalg.norm(grad) < 1e-9:
+            break
+
+        # line search along -grad
+        def al_f(xx):
+            val = augmented_lagrangian_f(xx, f, c, lam, rho)
+            return val, val, 0.0  # match (f_pen, f, pen) tuple expected by line_search
+
+        _, x_new, _, _, _ = line_search(al_f, x, -grad, grad, count, n, cost_per_eval=2, config=config)
+
+        x = x_new
+        x_history.append(x.copy())
+
+        # dual variable update
+        if count() + 1 <= n:
+            cx = c(x)
+            lam = np.maximum(0.0, lam + rho * cx)
+            # increase penalty if constraints still violated
+            if np.max(cx) > 1e-3:
+                rho = min(inc * rho, rho_max)
+
+        if count() >= n:
+            break
+
+    return x_history
 
 # ---- helpers ----
 def line_search(f, x, d, grad, count, n, cost_per_eval=1, config=None):
