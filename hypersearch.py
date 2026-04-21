@@ -14,11 +14,12 @@ from project2_py.helpers import Simple1, Simple2, Simple3
 from project2_py.project2 import (
     penalty_gradient_descent,
     penalty_l_bfgs,
-    augmented_lagrangian_gradient_descent
+    augmented_lagrangian_gradient_descent,
+    augmented_lagrangian_l_bfgs,
 )
 
 PROBLEMS = [Simple1, Simple2, Simple3]
-N_TRIALS = 200      # seeds per config (trade off speed vs accuracy)
+N_TRIALS = 200      # seeds per config
 PASS_THRESHOLD = 0.95
 
 # ---- parameter grids ----
@@ -69,6 +70,9 @@ def run_strategy(strategy, config, ProblemClass, n_trials):
             elif strategy == 'augmented_lagrangian_gradient_descent':
                 x_hist = augmented_lagrangian_gradient_descent(
                     p.f, p.g, p.c, x0, p.n, p.count, config)
+            elif strategy == 'augmented_lagrangian_l_bfgs':
+                x_hist = augmented_lagrangian_l_bfgs(
+                    p.f, p.g, p.c, x0, p.n, p.count, config)
             else:
                 return 0.0
             if p.count() > p.n:
@@ -98,18 +102,23 @@ def build_configs(strategy):
                     yield {'penalty': pen, 'line_search': ls, 'l_bfgs': lb}
             elif strategy == 'augmented_lagrangian_gradient_descent':
                 yield {'penalty': pen, 'line_search': ls}
+            elif strategy == 'augmented_lagrangian_l_bfgs':
+                for lb in product_dicts(LBFGS_GRID):
+                    yield {'penalty': pen, 'line_search': ls, 'l_bfgs': lb}
             else:
                 return
 
-def search():
+def search(force=False):
     strategies = [
         'quadratic_penalty_gradient_descent',
         'quadratic_penalty_l_bfgs',
         'absolute_penalty_gradient_descent',
         'absolute_penalty_l_bfgs',
         'augmented_lagrangian_gradient_descent',
+        'augmented_lagrangian_l_bfgs',
     ]
 
+    os.makedirs('hypersearch_results', exist_ok=True)
     results = {}
 
     for ProblemClass in PROBLEMS:
@@ -118,6 +127,15 @@ def search():
         print(f'\n=== {prob_name} ===')
 
         for strategy in strategies:
+            individual_path = f'hypersearch_results/{prob_name}_{strategy}.json'
+            # load existing result if it exists and --force not set, to avoid rerunning expensive configs
+            if not force and os.path.exists(individual_path):
+                with open(individual_path) as fh:
+                    entry = json.load(fh)
+                results[prob_name][strategy] = entry
+                print(f'  strategy: {strategy} — skipped (result exists, use --force to rerun)')
+                continue
+
             print(f'  strategy: {strategy}')
             configs = list(build_configs(strategy))
             print(f'  {len(configs)} configs to try')
@@ -130,10 +148,6 @@ def search():
                 if rate > best_rate:
                     best_rate = rate
                     best_config = config
-                    if rate >= PASS_THRESHOLD:
-                        # early stop once we find a clearly passing config
-                        # (keep searching for the absolute best)
-                        pass
 
             entry = {
                 'feasibility_rate': best_rate,
@@ -143,20 +157,15 @@ def search():
             results[prob_name][strategy] = entry
             print(f'  best rate: {best_rate:.3f} (pass={best_rate >= PASS_THRESHOLD})')
 
-            os.makedirs('hypersearch_results', exist_ok=True)
-            individual_path = f'hypersearch_results/{prob_name}_{strategy}.json'
             with open(individual_path, 'w') as fh:
                 json.dump(entry, fh, indent=2)
             print(f'  saved to {individual_path}')
-
-    os.makedirs('hypersearch_results', exist_ok=True)
 
     out_path = 'hypersearch_results/all_results.json'
     with open(out_path, 'w') as f:
         json.dump(results, f, indent=2)
     print(f'\nResults saved to {out_path}')
 
-    # print summary
     print('\n=== SUMMARY ===')
     for prob, strategies_res in results.items():
         for strategy, res in strategies_res.items():
@@ -167,4 +176,9 @@ def search():
 
 
 if __name__ == '__main__':
-    search()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--force', action='store_true',
+                        help='Rerun all strategies even if result files already exist')
+    args = parser.parse_args()
+    search(force=args.force)
