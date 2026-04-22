@@ -133,7 +133,7 @@ def search(force=False):
                 with open(individual_path) as fh:
                     entry = json.load(fh)
                 results[prob_name][strategy] = entry
-                print(f'  strategy: {strategy} — skipped (result exists, use --force to rerun)')
+                print(f'  strategy: {strategy} - skipped (result exists, use --force to rerun)')
                 continue
 
             print(f'  strategy: {strategy}')

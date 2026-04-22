@@ -394,7 +394,8 @@ def penalty_l_bfgs(f, g, c, x0, n, count, config, penalty_mode='quadratic'):
                 alpha = (delta @ q) / (gamma @ delta + 1e-8)
                 alphas.append(alpha)
                 q -= alpha * gamma
-
+            
+            # initial Hessian approximation
             z = (gammas[-1] @ deltas[-1]) / (gammas[-1] @ gammas[-1] + 1e-8) * q
 
             # forward loop
