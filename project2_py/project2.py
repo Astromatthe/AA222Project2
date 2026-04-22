@@ -278,6 +278,12 @@ def penalty_gradient_descent(f, g, c, x0, n, count, config, penalty_mode='quadra
         config (dict): configuration dictionary for penalty and gradient descent parameters
     Returns:
         x_history (list of np.array): history of positions visited during optimization
+        f_pen_history (list of float): history of penalized function values
+        f_history (list of float): history of original function values
+        pen_f_history (list of float): history of penalty values
+        g_pen_history (list of np.array): history of penalized gradients
+        g_history (list of np.array): history of original gradients
+        pen_g_history (list of np.array): history of penalty gradients
     """
     x = x0.copy()
     x_history = [x.copy()]
@@ -335,6 +341,12 @@ def penalty_l_bfgs(f, g, c, x0, n, count, config, penalty_mode='quadratic'):
         penalty_mode (str): 'quadratic' or 'absolute' for the type of penalty function to use
     Returns:
         x_history (list of np.array): history of positions visited during optimization
+        f_pen_history (list of float): history of penalized function values
+        f_history (list of float): history of original function values
+        pen_f_history (list of float): history of penalty values
+        g_pen_history (list of np.array): history of penalized gradients
+        g_history (list of np.array): history of original gradients
+        pen_g_history (list of np.array): history of penalty gradients
     """
     # initialize  
     x = x0.copy()
@@ -526,7 +538,6 @@ def augmented_lagrangian_gradient_descent(f, g, c, x0, n, count, config):
 
         if count() >= n:
             break
-
     return x_history
 
 def augmented_lagrangian_l_bfgs(f, g, c, x0, n, count, config):
@@ -646,10 +657,11 @@ def line_search(f, x, d, grad, count, n, cost_per_eval=1, config=None):
         cost_per_eval (int): budget cost of one call to f
         config (dict): configuration dictionary for line search parameters
     Returns:
-        alpha (float): step size found by line search
-        f_val (float): function value at new point
-        pen_val (float): penalty value at new point
-
+        step (float): step size found
+        x_new (np.array): new position after taking step
+        f_x_pen (float): penalized function value at new position
+        f_x (float): original function value at new position
+        pen_x (float): penalty value at new position
     """
     n_searches = config['line_search']['n_searches']
     step = config['line_search']['step']
@@ -685,7 +697,6 @@ def line_search(f, x, d, grad, count, n, cost_per_eval=1, config=None):
             f_new = f_res_new
             pen_new = 0.0
 
-        # 
         if f_new_pen <= f_x_pen + sigma * step * grad @ d:
             x = x_new
             f_x_pen = f_new_pen
